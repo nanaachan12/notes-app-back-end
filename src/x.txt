@@ -1,0 +1,167 @@
+notes-app-back-end
+├── node_modules
+├── src
+│ ├── handler.js
+│ ├── notes.js
+│ ├── routes.js
+│ └── server.js
+├── .eslintrc.json
+├── package-lock.json
+└── package.json
+
+
+
+//handler
+Kode ini adalah handler untuk menambah catatan pada aplikasi berbasis Hapi.js, sebuah framework untuk server HTTP pada Node.js. Berikut adalah penjelasan rinci untuk setiap bagian dari fungsi addNoteHandler ini:
+
+Mengimpor Modul dan Dependensi
+
+const { nanoid } = require('nanoid'); mengimpor fungsi nanoid, yang digunakan untuk menghasilkan ID unik dengan panjang 16 karakter.
+const notes = require('./notes'); mengimpor array notes yang digunakan untuk menyimpan catatan-catatan yang ada.
+Fungsi addNoteHandler
+
+Fungsi addNoteHandler menerima dua parameter:
+request: objek yang menyimpan informasi tentang request yang masuk (dalam hal ini, data catatan dikirim melalui request.payload).
+h: objek response toolkit dari Hapi yang digunakan untuk membuat response.
+Ekstraksi Payload
+
+
+request.payload adalah properti dalam Hapi.js yang digunakan untuk mengakses data yang dikirim oleh klien dalam request body, terutama untuk request dengan metode seperti POST, PUT, atau PATCH. Properti ini berisi data yang dikirim dalam format yang sesuai (misalnya JSON, teks, atau form-urlencoded).
+
+const { title, tags, body } = request.payload;: Mendapatkan nilai dari title, tags, dan body yang dikirim dari request.
+Membuat Catatan Baru
+
+const id = nanoid(16);: Membuat ID unik dengan panjang 16 karakter.
+const createdAt = new Date().toISOString(); dan const updatedAt = createdAt;: Menyimpan timestamp pembuatan dan pembaruan catatan.
+const newNote = { title, tags, body, id, createdAt, updatedAt };: Menggabungkan semua informasi menjadi satu objek newNote.
+Menambahkan Catatan ke Array
+
+notes.push(newNote);: Menambahkan objek newNote ke dalam array notes.
+Pengecekan Keberhasilan
+
+const isSuccess = notes.filter((note) => note.id === id).length > 0;: Memeriksa apakah catatan berhasil ditambahkan dengan mengecek apakah catatan dengan id yang sama ditemukan dalam array notes.
+Membuat Response
+
+Jika berhasil (isSuccess bernilai true):
+Mengembalikan response dengan status 201 (Created) yang menyatakan bahwa catatan berhasil ditambahkan, dengan informasi noteId.
+Jika gagal:
+Mengembalikan response dengan status 500 (Internal Server Error) yang menyatakan bahwa catatan gagal ditambahkan.
+Ekspor Modul
+
+module.exports = { addNoteHandler }; mengekspor fungsi addNoteHandler agar bisa digunakan di modul lain.
+
+
+
+//notes
+ode ini mendefinisikan dan mengekspor array notes kosong, yang nantinya akan digunakan untuk menyimpan data catatan dalam aplikasi. Berikut penjelasan setiap bagiannya:
+
+Deklarasi Array notes
+
+javascript
+Salin kode
+const notes = [];
+notes adalah array kosong yang akan berfungsi sebagai penyimpanan sementara untuk data catatan yang ditambahkan.
+Karena belum menggunakan database, notes ini akan bertindak sebagai penyimpanan in-memory—artinya, data catatan hanya akan tersedia selama aplikasi berjalan. Jika server dimulai ulang, semua catatan di notes akan hilang.
+Ekspor Array notes
+
+javascript
+Salin kode
+module.exports = notes;
+Dengan module.exports = notes;, array notes diekspor agar bisa diakses oleh modul lain dalam aplikasi.
+File lain, seperti handler yang mengatur penambahan atau pengambilan catatan, bisa mengimpor array ini dan menambah atau memodifikasinya secara langsung.
+
+
+
+
+
+//routes
+Kode ini mendefinisikan rute pada aplikasi Hapi.js yang akan menangani request untuk menambahkan catatan baru. Berikut adalah penjelasan rinci dari kode tersebut:
+
+Mengimpor addNoteHandler dari Modul Lain
+
+javascript
+Salin kode
+const { addNoteHandler } = require('./handler');
+Di sini, addNoteHandler diimpor dari file handler.js (atau file yang diatur di ./handler). Fungsi ini akan dipanggil ketika ada request yang sesuai dengan rute yang didefinisikan dalam konfigurasi berikut.
+
+Mendefinisikan Array Rute routes
+
+javascript
+Salin kode
+const routes = [
+  {
+    method: 'POST',
+    path: '/notes',
+    handler: addNoteHandler,
+  },
+];
+method: Menentukan jenis request yang ditangani rute ini. Dalam hal ini, method POST berarti rute ini akan memproses request yang menggunakan HTTP POST.
+path: URL endpoint yang akan menangani request. Rute ini akan memproses request yang dikirim ke /notes.
+handler: Fungsi yang akan menangani request. Di sini, addNoteHandler dipanggil untuk memproses data yang diterima dari POST /notes. Handler ini yang bertugas menambahkan catatan ke dalam array notes di dalam aplikasi.
+Menambahkan Komentar di Handler
+
+javascript
+Salin kode
+// handler: () => {},
+Komentar ini menunjukkan bahwa sebelumnya handler didefinisikan dengan fungsi kosong () => {}. Kode ini telah digantikan oleh addNoteHandler, sehingga saat request POST ke /notes dikirim, handler addNoteHandler akan dipanggil.
+
+Mengekspor Array routes
+
+javascript
+Salin kode
+module.exports = routes;
+Dengan ini, array routes diekspor agar dapat diimpor dan digunakan di file utama server Hapi.js. Array ini berfungsi sebagai daftar konfigurasi rute yang dapat diakses oleh aplikasi Hapi untuk menangani berbagai endpoint dan method.
+
+Kode ini secara keseluruhan digunakan untuk menyiapkan rute sehingga aplikasi Hapi bisa menangani request untuk menambahkan catatan baru di endpoint /notes.
+
+
+
+
+//Server
+Kode ini adalah skrip dasar untuk menginisialisasi dan menjalankan server Hapi.js pada Node.js. Berikut adalah penjelasan rinci dari setiap bagian:
+
+Mengimpor Modul Hapi dan Rute
+
+javascript
+Salin kode
+const Hapi = require('@hapi/hapi');
+const routes = require('./routes');
+const Hapi = require('@hapi/hapi'); mengimpor modul Hapi untuk membuat server.
+const routes = require('./routes'); mengimpor konfigurasi rute dari file routes.js, yang berisi definisi rute seperti yang telah ditentukan sebelumnya.
+Membuat Fungsi init
+
+javascript
+Salin kode
+const init = async () => {
+  const server = Hapi.server({
+    port: 5000,
+    host: 'localhost',
+  });
+init adalah fungsi asinkron yang menginisialisasi server Hapi.
+const server = Hapi.server({...}); membuat instance server Hapi dengan konfigurasi berikut:
+port: 5000, artinya server akan mendengarkan request pada port 5000.
+host: 'localhost', menandakan server hanya akan menerima koneksi dari localhost. Jika dijalankan pada sistem operasi tertentu seperti Linux atau macOS, sebaiknya diubah menjadi '0.0.0.0' agar bisa diakses secara lokal.
+Menambahkan Rute ke Server
+
+javascript
+Salin kode
+server.route(routes);
+Menggunakan server.route(routes); untuk mendaftarkan rute yang diimpor dari routes.js ke server. Ini memungkinkan server untuk menangani request sesuai dengan rute yang telah didefinisikan.
+
+Memulai Server
+
+javascript
+Salin kode
+await server.start();
+console.log(`Server berjalan pada ${server.info.uri}`);
+await server.start(); memulai server Hapi. Karena ini adalah operasi asinkron, await memastikan server benar-benar mulai sebelum melanjutkan ke baris berikutnya.
+console.log(...) mencetak URL di mana server berjalan (server.info.uri akan mengembalikan URL localhost:5000), sehingga kita bisa melihat apakah server berjalan dengan benar.
+Memanggil Fungsi init
+
+javascript
+Salin kode
+init();
+Fungsi init dipanggil untuk memulai proses inisialisasi dan menjalankan server.
+
+Ringkasan
+Kode ini menginisialisasi dan memulai server Hapi.js yang akan berjalan di localhost:5000. Server menggunakan rute yang didefinisikan di routes.js, yang memungkinkan aplikasi menangani berbagai request sesuai dengan konfigurasi yang diberikan.

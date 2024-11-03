@@ -1,0 +1,41 @@
+
+CORS (Cross-Origin Resource Sharing) adalah mekanisme yang memungkinkan sumber daya dari satu asal (origin) untuk diakses oleh skrip yang berjalan pada asal yang berbeda. Hal ini sangat penting dalam pengembangan aplikasi web modern, di mana sering kali aplikasi klien (seperti aplikasi front-end) dan server (back-end) berjalan pada domain atau port yang berbeda.
+
+Cara Kerja CORS
+Ketika browser melakukan permintaan dari satu origin ke origin lain, browser akan mengirimkan permintaan HTTP yang berisi header yang menyatakan dari mana permintaan itu berasal. Server kemudian harus mengirimkan respons yang menyertakan header yang menentukan apakah permintaan tersebut diizinkan atau tidak.
+
+Header CORS Umum
+Access-Control-Allow-Origin: Menentukan asal yang diizinkan untuk mengakses sumber daya. Misalnya, jika Anda ingin mengizinkan semua asal, Anda bisa menggunakan *, tetapi dalam produksi, disarankan untuk menggunakan domain spesifik.
+Access-Control-Allow-Methods: Menyebutkan metode HTTP yang diizinkan (seperti GET, POST, PUT, dll).
+Access-Control-Allow-Headers: Menyebutkan header khusus yang dapat digunakan dalam permintaan.
+Mengonfigurasi CORS di Hapi.js
+Di Hapi.js, Anda dapat mengkonfigurasi CORS dengan menambahkan pengaturan di dalam definisi server. Berikut adalah contoh bagaimana cara melakukannya:
+
+javascript
+Salin kode
+const Hapi = require('@hapi/hapi');
+
+const init = async () => {
+  const server = Hapi.server({
+    port: 5000,
+    host: 'localhost',
+    routes: {
+      cors: {
+        origin: ['*'], // Ganti '*' dengan domain spesifik jika perlu
+      },
+    },
+  });
+
+  // Tambahkan rute di sini
+
+  await server.start();
+  console.log(`Server berjalan pada ${server.info.uri}`);
+};
+
+init();
+Tips untuk Menggunakan CORS
+Batasi Origin: Hindari menggunakan * di lingkungan produksi. Sebaiknya tentukan domain spesifik yang diizinkan untuk mengakses API Anda.
+Metode dan Header: Selalu pastikan bahwa metode dan header yang diizinkan sesuai dengan yang digunakan dalam permintaan dari klien.
+Preflight Requests: Untuk permintaan yang tidak sederhana (misalnya, menggunakan metode selain GET atau POST, atau menggunakan header kustom), browser mengirimkan permintaan "preflight" (OPTIONS) terlebih dahulu untuk memeriksa apakah metode tersebut diizinkan.
+Uji dengan Developer Tools: Gunakan alat pengembang di browser untuk melihat header yang dikirim dan diterima, serta untuk mengidentifikasi masalah CORS yang mungkin terjadi.
+Dengan pengaturan CORS yang benar, Anda dapat memastikan bahwa aplikasi Anda dapat berinteraksi dengan aman dan efisien antar domain.
